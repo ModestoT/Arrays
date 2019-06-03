@@ -51,7 +51,8 @@ void resize_array(Array *arr) {
 
   // Create a new element storage with double capacity
   // char **newStorage = malloc(20);
-  char **newStorage = malloc( sizeof(arr->elements) * 2 );
+  int newCapcity = arr->capacity * 2;
+  char **newStorage = malloc( newCapcity * sizeof(char *) );
   // newStorage[0] = arr->elements[0];
   // printf("%s\n", newStorage[0]);
 
@@ -64,7 +65,7 @@ void resize_array(Array *arr) {
   // Free the old elements array (but NOT the strings they point to)
   free(arr->elements);
   // Update the elements and capacity to new values
-  arr->capacity++;
+  arr->capacity = newCapcity;
   arr->elements = newStorage;
 }
 
@@ -106,8 +107,8 @@ void arr_insert(Array *arr, char *element, int index) {
     exit(1);
   }
   // Resize the array if the number of elements is over capacity
-  if (arr->count > arr->capacity){
-    printf("going over capcity need to resize array");
+  if (arr->count+1 > arr->capacity){
+    printf("going over capcity need to resize array\n");
     resize_array(arr);
   }
   // Move every element after the insert index to the right one position
@@ -147,14 +148,29 @@ void arr_append(Array *arr, char *element) {
  * Throw an error if the value is not found.
  *****/
 void arr_remove(Array *arr, char *element) {
-
+  int found;
   // Search for the first occurence of the element and remove it.
   // Don't forget to free its memory!
-
+  for (int i = 0; i < arr->count; i++){
+    if (arr->elements[i] == element){
+      found = i;
+    }
+  }
+  
+  if (found < 0){
+    fprintf(stderr, "Value not found\n");
+    exit(1);
+  }
   // Shift over every element after the removed element to the left one position
-
+  for (int i = found; i < arr->count-1; i++){
+    arr->elements[i] = arr->elements[i+1];
+  }
   // Decrement count by 1
-
+  // arr->elements[arr->count-1] = NULL;
+  // free(arr->elements[arr->count-1]);
+  printf("first spot: %s\n", arr_read(arr, 0));
+  printf("last spot: %s\n", arr->elements[arr->count-1]);
+  arr->count--;
 }
 
 
@@ -187,8 +203,8 @@ int main(void)
   // printf("Read method: %s\n", read);
   arr_append(arr, "STRING3");
   arr_print(arr);
-  // arr_remove(arr, "STRING3");
-  arr_insert(arr, "VALUE-1", 0);
+  arr_remove(arr, "STRING3");
+  // arr_insert(arr, "VALUE-1", 0);
   arr_print(arr);
 
   destroy_array(arr);
