@@ -111,13 +111,14 @@ void arr_insert(Array *arr, char *element, int index) {
     resize_array(arr);
   }
   // Move every element after the insert index to the right one position
-  for (int i = index; i < arr->count; i++){
-
+  for (int i = arr->count-1; i >= index; i--){
+    arr->elements[i+1] = arr->elements[i];
   }
   // Copy the element (hint: use `strdup()`) and add it to the array
-
+  char *temp = strdup(element);
+  arr->elements[index] = temp;
   // Increment count by 1
-
+  arr->count++;
 }
 
 /*****
@@ -187,7 +188,8 @@ int main(void)
   arr_append(arr, "STRING3");
   arr_print(arr);
   // arr_remove(arr, "STRING3");
-  // arr_print(arr);
+  arr_insert(arr, "VALUE-1", 0);
+  arr_print(arr);
 
   destroy_array(arr);
 
