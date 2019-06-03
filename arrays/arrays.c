@@ -50,13 +50,22 @@ void destroy_array(Array *arr) {
 void resize_array(Array *arr) {
 
   // Create a new element storage with double capacity
+  // char **newStorage = malloc(20);
+  char **newStorage = malloc( sizeof(arr->elements) * 2 );
+  // newStorage[0] = arr->elements[0];
+  // printf("%s\n", newStorage[0]);
 
   // Copy elements into the new storage
-
+  for (int i = 0; i < arr->count; i++){
+    newStorage[i] = arr->elements[i];
+  }
+  // printf("new string: %s\n", newStorage[0]);
+  // printf("new array size: %ld\n", sizeof(*newStorage));
   // Free the old elements array (but NOT the strings they point to)
-
+  free(arr->elements);
   // Update the elements and capacity to new values
-
+  arr->capacity++;
+  arr->elements = newStorage;
 }
 
 
@@ -76,8 +85,8 @@ char *arr_read(Array *arr, int index) {
 
   // Throw an error if the index is greater or equal to than the current count
   if (index >= arr->count){
-    perror("read");
-    exit(1);
+    fprintf(stderr, "index out of bounds\n");
+    return NULL;
   }
   // Otherwise, return the element at the given index
   return arr->elements[index];
@@ -92,7 +101,10 @@ char *arr_read(Array *arr, int index) {
 void arr_insert(Array *arr, char *element, int index) {
 
   // Throw an error if the index is greater than the current count
-
+  if (index > arr->count){
+    fprintf(stderr, "index out of bounds\n");
+    exit(1);
+  }
   // Resize the array if the number of elements is over capacity
 
   // Move every element after the insert index to the right one position
@@ -168,7 +180,10 @@ int main(void)
 
   // arr_insert(arr, "STRING1", 0);
   arr_append(arr, "STRING4");
-  arr_append(arr, "STRING2");
+  resize_array(arr);
+  // arr_append(arr, "STRING2");
+  // char *read = arr_read(arr, 1);
+  // printf("Read method: %s\n", read);
   //arr_append(arr, "STRING3");
   arr_print(arr);
   // arr_remove(arr, "STRING3");
