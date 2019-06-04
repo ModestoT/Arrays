@@ -21,11 +21,14 @@ typedef struct Array {
  *****/
 Array *create_array (int capacity) {
   // Allocate memory for the Array struct
-
+  Array *arr = malloc(sizeof(Array));
   // Set initial values for capacity and count
-
+  arr->capacity = capacity;
+  arr->count = 0;
   // Allocate memory for elements
+  arr->elements = malloc( capacity * sizeof(char *) );
 
+  return arr;
 }
 
 
@@ -35,9 +38,12 @@ Array *create_array (int capacity) {
 void destroy_array(Array *arr) {
 
   // Free all elements
-
+  for (int i = 0; i < arr->count; i++){
+    free(arr->elements[i]);
+  } 
   // Free array
-
+  free(arr->elements);
+  free(arr);
 }
 
 /*****
@@ -47,13 +53,18 @@ void destroy_array(Array *arr) {
 void resize_array(Array *arr) {
 
   // Create a new element storage with double capacity
+  int newCapcity = arr->capacity * 2;
+  char **newStorage = malloc( newCapcity * sizeof(char *) );
 
   // Copy elements into the new storage
-
+  for (int i = 0; i < arr->count; i++){
+    newStorage[i] = arr->elements[i];
+  }
   // Free the old elements array (but NOT the strings they point to)
-
+  free(arr->elements);
   // Update the elements and capacity to new values
-
+  arr->capacity = newCapcity;
+  arr->elements = newStorage;
 }
 
 
@@ -72,8 +83,12 @@ void resize_array(Array *arr) {
 char *arr_read(Array *arr, int index) {
 
   // Throw an error if the index is greater or equal to than the current count
-
+  if (index >= arr->count){
+    fprintf(stderr, "index out of bounds\n");
+    return NULL;
+  }
   // Otherwise, return the element at the given index
+  return arr->elements[index];
 }
 
 
@@ -85,29 +100,41 @@ char *arr_read(Array *arr, int index) {
 void arr_insert(Array *arr, char *element, int index) {
 
   // Throw an error if the index is greater than the current count
-
+  if (index > arr->count){
+    fprintf(stderr, "index out of bounds\n");
+    exit(1);
+  }
   // Resize the array if the number of elements is over capacity
-
+  if (arr->count >= arr->capacity){
+    printf("going over capcity need to resize array\n");
+    resize_array(arr);
+  }
   // Move every element after the insert index to the right one position
+  for (int i = arr->count-1; i >= index; i--){
+    arr->elements[i+1] = arr->elements[i];
+  }
 
   // Copy the element (hint: use `strdup()`) and add it to the array
-
+  arr->elements[index] = strdup(element);
   // Increment count by 1
-
+  arr->count++;
 }
 
 /*****
  * Append an element to the end of the array
  *****/
 void arr_append(Array *arr, char *element) {
-
   // Resize the array if the number of elements is over capacity
   // or throw an error if resize isn't implemented yet.
+  if (arr->count >= arr->capacity){
+    printf("going over capcity need to resize array\n");
+    resize_array(arr);
+  }
 
   // Copy the element and add it to the end of the array
-
+  arr->elements[arr->count] = strdup(element);
   // Increment count by 1
-
+  arr->count++;
 }
 
 /*****
@@ -117,14 +144,32 @@ void arr_append(Array *arr, char *element) {
  * Throw an error if the value is not found.
  *****/
 void arr_remove(Array *arr, char *element) {
-
+  int found = 0;
   // Search for the first occurence of the element and remove it.
   // Don't forget to free its memory!
+  for (int i = 0; i < arr->count; i++){
+    if (strcmp(arr->elements[i], element) == 0){
+      found = i;
+      printf("Found element: %s\n", arr->elements[i]);
+    }
+  }
+  
+  if (found < 0){
+    fprintf(stderr, "Value not found\n");
+    exit(1);
+  }
 
+  // after finding the element free that spot in memory
+  free(arr->elements[found]);
+  
   // Shift over every element after the removed element to the left one position
-
+  for (int i = found; i < arr->count-1; i++){
+    arr->elements[i] = arr->elements[i+1];
+  }
   // Decrement count by 1
-
+  // printf("first spot: %s\n", arr_read(arr, 0));
+  // printf("last spot: %s\n", arr->elements[arr->count-1]);
+  arr->count--;
 }
 
 
@@ -149,12 +194,18 @@ int main(void)
 
   Array *arr = create_array(1);
 
-  arr_insert(arr, "STRING1", 0);
-  arr_append(arr, "STRING4");
+  // arr_insert(arr, "STRING1", 0);
+  arr_insert(arr, "STRING4", 0);
+  resize_array(arr);
   arr_insert(arr, "STRING2", 0);
+  // char *read = arr_read(arr, 1);
+  // printf("Read method: %s\n", read);
   arr_insert(arr, "STRING3", 1);
   arr_print(arr);
-  arr_remove(arr, "STRING3");
+  arr_remove(arr, "STRING4");
+  arr_append(arr, "VALUE-1");
+  arr_print(arr);
+  arr_remove(arr, "STRING2");
   arr_print(arr);
 
   destroy_array(arr);
